@@ -6,14 +6,14 @@ import { RolePermission } from './role-permission.entity';
 export class Permission {
     // This class represents the 'permissions' table in the database
     @PrimaryGeneratedColumn() // Primary key, auto-incremented
-    id: number;
+    id!: number;
 
     @Column({ unique: true, length: 50 }) // Unique permission name with a maximum length of 50 characters
-    name: string;
+    name!: string;
 
     @Column({ length: 255 })
-    description: string;
+    description!: string;
 
     @OneToMany(() => RolePermission, (rolePermission) => rolePermission.permission) // One-to-many relationship with RolePermission entity
-    rolePermissions: RolePermission[];
+    rolePermissions!: RolePermission[];
 }

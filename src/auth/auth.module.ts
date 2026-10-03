@@ -8,6 +8,8 @@ import { RoleModule } from './role/role.module';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { PermissionModule } from './permission/permission.module';
+import { RolePermissionModule } from './role-permission/role-permission.module';
 
 @Module({
     imports: [
@@ -22,6 +24,8 @@ import { JwtStrategy } from './strategies/jwt.strategy';
                 },
             }),
         }),
+        PermissionModule,
+        RolePermissionModule,
     ],
     providers: [AuthService, JwtStrategy],
     controllers: [AuthController],
