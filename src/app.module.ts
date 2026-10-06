@@ -2,10 +2,11 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 
+import { RoutinesModule } from 'src/routines/routines.module';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { RoutinesModule } from './routines/routines.module';
 import { ExercisesModule } from './exercises/exercises.module';
 import { ActivityLogModule } from './activity-log/activity-log.module';
 import { RoutineExerciseModule } from './routine-exercise/routine-exercise.module';

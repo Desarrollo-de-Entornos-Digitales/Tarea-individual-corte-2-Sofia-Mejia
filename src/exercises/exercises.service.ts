@@ -1,26 +1,67 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
+import { ResourceNotFoundException } from '../common/exceptions';
+import { Exercises } from '../auth/entities/exercises.entity';
+
 import { CreateExerciseDto } from './dto/create-exercise.dto';
 import { UpdateExerciseDto } from './dto/update-exercise.dto';
 
 @Injectable()
 export class ExercisesService {
-  create(createExerciseDto: CreateExerciseDto) {
-    return 'This action adds a new exercise';
-  }
+    constructor(
+        @InjectRepository(Exercises)
+        private readonly exerciseRepository: Repository<Exercises>,
+    ) {}
 
-  findAll() {
-    return `This action returns all exercises`;
-  }
+    async create(createExerciseDto: CreateExerciseDto): Promise<Exercises> {
+        const exercise = this.exerciseRepository.create(createExerciseDto);
 
-  findOne(id: number) {
-    return `This action returns a #${id} exercise`;
-  }
+        return await this.exerciseRepository.save(exercise);
+    }
 
-  update(id: number, updateExerciseDto: UpdateExerciseDto) {
-    return `This action updates a #${id} exercise`;
-  }
+    async findAll(): Promise<Exercises[]> {
+        return await this.exerciseRepository.find({
+            relations: {
+                routineExercises: true,
+            },
+            order: {
+                id: 'ASC',
+            },
+        });
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} exercise`;
-  }
+    async findOne(id: number): Promise<Exercises> {
+        const exercise = await this.exerciseRepository.findOne({
+            where: {
+                id,
+            },
+            relations: {
+                routineExercises: true,
+            },
+        });
+
+        if (!exercise) {
+            throw new ResourceNotFoundException('Ejercicio', id);
+        }
+
+        return exercise;
+    }
+
+    async update(id: number, updateExerciseDto: UpdateExerciseDto): Promise<Exercises> {
+        await this.findOne(id);
+
+        await this.exerciseRepository.update(id, updateExerciseDto);
+
+        return await this.findOne(id);
+    }
+
+    async remove(id: number): Promise<{ id: number }> {
+        await this.findOne(id);
+
+        await this.exerciseRepository.delete(id);
+
+        return { id };
+    }
 }

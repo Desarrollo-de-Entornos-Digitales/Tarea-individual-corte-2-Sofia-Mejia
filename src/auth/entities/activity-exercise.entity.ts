@@ -1,9 +1,10 @@
-import {Column, JoinColumn, ManyToOne, OneToMany, PrimaryColumn} from "typeorm";
-import {ActivityLog} from "./activity-log.entity";
-import {RoutineExercise} from "./routine-exercise.entity";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
 
+import { ActivityLog } from './activity-log.entity';
+import { RoutineExercise } from './routine-exercise.entity';
+
+@Entity('activity-exercises')
 export class ActivityExercise {
-
     @PrimaryColumn()
     id!: number;
 
@@ -25,23 +26,17 @@ export class ActivityExercise {
     @Column()
     distanceCoveredKm!: number;
 
-    @Column({name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'}) // Automatically set the creation date of the user record to the current timestamp
+    @Column({ name: 'started_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' }) // Automatically set the creation date of the user record to the current timestamp
     startedAt!: Date;
 
-    @Column({name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'}) // Automatically set the creation date of the user record to the current timestamp
+    @Column({ name: 'completed_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' }) // Automatically set the creation date of the user record to the current timestamp
     completedAt!: Date;
 
     @ManyToOne(() => ActivityLog, (activityLog) => activityLog.activityExercise)
-    @JoinColumn({name: 'activityLog_id'})
-    activityLog!: []
-
+    @JoinColumn({ name: 'activityLog_id' })
+    activityLog!: ActivityLog[];
 
     @ManyToOne(() => RoutineExercise, (routineExercise) => routineExercise.activityExercise)
-    @JoinColumn({name: 'routineExercise_id'})
-    routineExercise!: []
-
-
-
-
-
+    @JoinColumn({ name: 'routineExercise_id' })
+    routineExercise!: RoutineExercise[];
 }

@@ -1,8 +1,9 @@
-import {Column, OneToMany, PrimaryGeneratedColumn} from 'typeorm'
-import {RoutineExercise} from './routine-exercise.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
-export class Exercise {
+import { RoutineExercise } from './routine-exercise.entity';
 
+@Entity('exercises')
+export class Exercises {
     @PrimaryGeneratedColumn()
     id!: number;
 
@@ -27,9 +28,13 @@ export class Exercise {
     @Column()
     icon!: string;
 
-    @Column({name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
+    @Column({
+        name: 'created_at',
+        type: 'timestamp',
+        default: () => 'CURRENT_TIMESTAMP',
+    })
     createdAt!: Date;
 
     @OneToMany(() => RoutineExercise, (routineExercise) => routineExercise.exercise)
-    routineExercises!: []
+    routineExercises!: RoutineExercise[];
 }

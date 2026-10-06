@@ -1,15 +1,15 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { ConfigService } from '@nestjs/config';
-import { Between, ILike, IsNull, Not, Repository } from 'typeorm';
+import {Injectable} from '@nestjs/common';
+import {InjectRepository} from '@nestjs/typeorm';
+import {ConfigService} from '@nestjs/config';
+import {Between, ILike, IsNull, Not, Repository} from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
-import { RoleNotFoundException, UserNotFoundException } from '../../common/exceptions';
-import { User } from '../entities/user.entity';
-import { RoleService } from '../role/role.service';
+import {RoleNotFoundException, UserNotFoundException} from '../../common/exceptions';
+import {User} from '../entities/user.entity';
+import {RoleService} from '../role/role.service';
 
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import {CreateUserDto} from './dto/create-user.dto';
+import {UpdateUserDto} from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -18,10 +18,10 @@ export class UserService {
         private readonly userRepository: Repository<User>,
         private readonly roleService: RoleService,
         private readonly configService: ConfigService,
-    ) {}
+    ) { }
 
     async create(createUserDto: CreateUserDto): Promise<User> {
-        const { roleId, ...userData } = createUserDto;
+        const {roleId, ...userData} = createUserDto;
         const role = await this.roleService.findOne(roleId);
         if (!role) {
             throw new RoleNotFoundException(roleId);
@@ -39,7 +39,7 @@ export class UserService {
 
         const savedUser = await this.userRepository.save(user);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { passwordHash: _, ...userWithoutPassword } = savedUser;
+        const {passwordHash: _, ...userWithoutPassword} = savedUser;
         return userWithoutPassword as User;
     }
 
@@ -53,8 +53,8 @@ export class UserService {
 
     async findOne(id: number, relations: boolean = false): Promise<User> {
         const user = await this.userRepository.findOne({
-            where: { id },
-            relations: { role: relations ? { rolePermissions: { permission: true } } : false },
+            where: {id},
+            relations: {role: relations ? {rolePermissions: {permission: true}} : false},
         });
         if (!user) {
             throw new UserNotFoundException(id);
@@ -64,7 +64,7 @@ export class UserService {
 
     async findByEmail(email: string): Promise<User | null> {
         const user = await this.userRepository.findOne({
-            where: { email },
+            where: {email},
             relations: {
                 role: {
                     rolePermissions: {
@@ -123,7 +123,7 @@ export class UserService {
         await this.findOne(id);
         const result = await this.userRepository.delete(id);
         if (result.affected) {
-            return { id };
+            return {id};
         }
         return null;
     }
@@ -133,11 +133,11 @@ export class UserService {
      */
     async findByRole(roleName: string) {
         return await this.userRepository.find({
-            where: { role: { name: roleName } },
+            where: {role: {name: roleName}},
             relations: {
                 role: true,
             },
-            order: { username: 'ASC' },
+            order: {username: 'ASC'},
         });
     }
 
@@ -153,7 +153,14 @@ export class UserService {
      */
     async countByRole(roleName: string): Promise<number> {
         return await this.userRepository.count({
-            where: { role: { name: roleName } },
+            where: {
+                role: {
+                    name: roleName,
+                },
+            },
+            relations: {
+                role: true,
+            },
         });
     }
 
@@ -184,8 +191,8 @@ export class UserService {
     async searchUsersWithBio(term: string) {
         return await this.userRepository.find({
             where: [
-                { username: ILike(`%${term}%`), bio: Not(IsNull()) },
-                { email: ILike(`%${term}%`), bio: Not(IsNull()) },
+                {username: ILike(`%${term}%`), bio: Not(IsNull())},
+                {email: ILike(`%${term}%`), bio: Not(IsNull())},
             ],
             relations: {
                 role: true,
@@ -202,7 +209,7 @@ export class UserService {
      */
     async getUserWithPermissions(userId: number) {
         const user = await this.userRepository.findOne({
-            where: { id: userId },
+            where: {id: userId},
             relations: {
                 role: {
                     rolePermissions: {

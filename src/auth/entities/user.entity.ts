@@ -1,7 +1,8 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 import { Role } from './role.entity';
-import {Routine} from './routine.entity';
+import { Routine } from './routine.entity';
+import { ActivityLog } from './activity-log.entity';
 
 @Entity('users') // This decorator marks the class as a database entity and specifies the table name as 'users'
 // DON'T CALL IT USER, IT'S A RESERVED WORD IN SQL
@@ -29,5 +30,8 @@ export class User {
     role!: Role; // This property represents the role associated with the user, is of type Role and not an array because it's a many-to-one relationship
 
     @OneToMany(() => Routine, (routine) => routine.user)
-    routines!:[];
+    routines!: Routine[];
+
+    @OneToMany(() => ActivityLog, (activityLog) => activityLog.user) // Un usuario puede tener muchas sesiones registradas
+    activityLog!: ActivityLog[];
 }

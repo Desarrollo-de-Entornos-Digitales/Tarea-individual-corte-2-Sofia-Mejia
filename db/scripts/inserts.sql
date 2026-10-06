@@ -12,11 +12,16 @@ INSERT INTO permissions (name, description) VALUES
 ('manage_users', 'Manage user accounts'),
 ('manage_roles', 'Manage roles and permissions'),
 ('manage_exercises', 'Manage exercise catalog');
-
+('read_exercise','Read the exercise catalog'),
+('create_activity', 'Register new activity logs and performed exercises'),
+('read_activity', 'Read activity logs and performed exercises'),
+('update_activity', 'Update activity logs and performed exercises'),
+('delete_activity', 'Delete activity logs and performed exercises');
 -- Insert Role-Permission relationships
 INSERT INTO role_permissions (role_id, permission_id) VALUES
 (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), -- Admin has all permissions
-(2, 1), (2, 2), (2, 3), (2, 4);                         -- Regular user can manage their routines
+(2, 1), (2, 2), (2, 3), (2, 4);
+(2, 8), (2, 9), (2, 10), (2, 11), (2, 12); -- Regular user can manage their routines
 
 -- Insert Users
 INSERT INTO users (username, email, password_hash, bio, role_id, created_at) VALUES

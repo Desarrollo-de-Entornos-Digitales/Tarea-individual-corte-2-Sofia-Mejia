@@ -1,34 +1,48 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+
+import { PositiveIntPipe } from '../common/pipes/positive-int-pipe';
+import { PermissionsGuard } from '../auth/guards/permissions/permissions.guard';
+import { Permissions } from '../auth/decorators/permissions.decorator';
+
 import { ActivityExerciseService } from './activity-exercise.service';
 import { CreateActivityExerciseDto } from './dto/create-activity-exercise.dto';
 import { UpdateActivityExerciseDto } from './dto/update-activity-exercise.dto';
 
-@Controller('activity-exercise')
+@Controller('activity-exercises')
+@UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class ActivityExerciseController {
-  constructor(private readonly activityExerciseService: ActivityExerciseService) {}
+    constructor(private readonly activityExerciseService: ActivityExerciseService) {}
 
-  @Post()
-  create(@Body() createActivityExerciseDto: CreateActivityExerciseDto) {
-    return this.activityExerciseService.create(createActivityExerciseDto);
-  }
+    @Post()
+    @HttpCode(HttpStatus.CREATED)
+    @Permissions('create_activity')
+    create(@Body() dto: CreateActivityExerciseDto) {
+        return this.activityExerciseService.create(dto);
+    }
 
-  @Get()
-  findAll() {
-    return this.activityExerciseService.findAll();
-  }
+    @Get()
+    @Permissions('read_activity')
+    findAll() {
+        return this.activityExerciseService.findAll();
+    }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.activityExerciseService.findOne(+id);
-  }
+    @Get(':id')
+    @Permissions('read_activity')
+    findOne(@Param('id', PositiveIntPipe) id: number) {
+        return this.activityExerciseService.findOne(id);
+    }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateActivityExerciseDto: UpdateActivityExerciseDto) {
-    return this.activityExerciseService.update(+id, updateActivityExerciseDto);
-  }
+    @Patch(':id')
+    @Permissions('update_activity')
+    update(@Param('id', PositiveIntPipe) id: number, @Body() dto: UpdateActivityExerciseDto) {
+        return this.activityExerciseService.update(id, dto);
+    }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.activityExerciseService.remove(+id);
-  }
+    @Delete(':id')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    @Permissions('delete_activity')
+    async remove(@Param('id', PositiveIntPipe) id: number) {
+        await this.activityExerciseService.remove(id);
+    }
 }
