@@ -180,8 +180,4 @@ Todos los recursos exponen el CRUD completo: crear (`POST /recurso`), listar (`G
 
 Con la app en marcha y el seed cargado:
 
-```bash
-./api-tests/verify-authorization.sh          # 19 comprobaciones (401, 403, 200, 201, 204)
-```
-
-También se puede importar `api-tests/postman_collection.json` en Postman y ejecutarla con el Collection Runner (40 peticiones con aserciones: login, accesos denegados y accesos permitidos para `admin` y `user`).
+Importar `api-tests/postman_collection.json` en Postman y ejecutarla con el Collection Runner (40 peticiones con aserciones: login, accesos denegados y accesos permitidos para `admin` y `user`).
