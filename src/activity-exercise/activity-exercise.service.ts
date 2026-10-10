@@ -2,10 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { ActivityLog } from 'src/auth/entities/activity-log.entity';
-import { RoutineExercise } from 'src/auth/entities/routine-exercise.entity';
-import { ActivityExercise } from 'src/auth/entities/activity-exercise.entity';
-
+import { ActivityLog } from '../auth/entities/activity-log.entity';
+import { RoutineExercise } from '../auth/entities/routine-exercise.entity';
+import { ActivityExercise } from '../auth/entities/activity-exercise.entity';
 import { ResourceNotFoundException } from '../common/exceptions';
 
 import { CreateActivityExerciseDto } from './dto/create-activity-exercise.dto';
@@ -47,9 +46,15 @@ export class ActivityExerciseService {
     async create(dto: CreateActivityExerciseDto): Promise<ActivityExercise> {
         await this.validateReferences(dto.activityLogId, dto.routineExerciseId);
 
-        const activityExercise = this.activityExerciseRepository.create(dto);
+        const { activityLogId, routineExerciseId, ...data } = dto;
+        const activityExercise = this.activityExerciseRepository.create({
+            ...data,
+            activityLog: { id: activityLogId },
+            routineExercise: { id: routineExerciseId },
+        });
+        const saved = await this.activityExerciseRepository.save(activityExercise);
 
-        return await this.activityExerciseRepository.save(activityExercise);
+        return await this.findOne(saved.id);
     }
 
     async findAll(): Promise<ActivityExercise[]> {
@@ -87,7 +92,12 @@ export class ActivityExerciseService {
 
         await this.validateReferences(dto.activityLogId, dto.routineExerciseId);
 
-        await this.activityExerciseRepository.update(id, dto);
+        const { activityLogId, routineExerciseId, ...data } = dto;
+        await this.activityExerciseRepository.update(id, {
+            ...data,
+            ...(activityLogId ? { activityLog: { id: activityLogId } } : {}),
+            ...(routineExerciseId ? { routineExercise: { id: routineExerciseId } } : {}),
+        });
 
         return await this.findOne(id);
     }

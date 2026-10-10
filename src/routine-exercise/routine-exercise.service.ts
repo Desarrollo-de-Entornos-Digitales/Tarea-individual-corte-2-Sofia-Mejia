@@ -2,10 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { Routine } from 'src/auth/entities/routine.entity';
-import { Exercises } from 'src/auth/entities/exercises.entity';
-import { RoutineExercise } from 'src/auth/entities/routine-exercise.entity';
-
+import { Routine } from '../auth/entities/routine.entity';
+import { Exercises } from '../auth/entities/exercises.entity';
+import { RoutineExercise } from '../auth/entities/routine-exercise.entity';
 import { ResourceNotFoundException } from '../common/exceptions';
 
 import { CreateRoutineExerciseDto } from './dto/create-routine-exercise.dto';
@@ -37,9 +36,15 @@ export class RoutineExerciseService {
     async create(dto: CreateRoutineExerciseDto): Promise<RoutineExercise> {
         await this.validateReferences(dto.routineId, dto.exerciseId);
 
-        const routineExercise = this.routineExerciseRepository.create(dto);
+        const { routineId, exerciseId, ...data } = dto;
+        const routineExercise = this.routineExerciseRepository.create({
+            ...data,
+            routine: { id: routineId },
+            exercise: { id: exerciseId },
+        });
+        const saved = await this.routineExerciseRepository.save(routineExercise);
 
-        return await this.routineExerciseRepository.save(routineExercise);
+        return await this.findOne(saved.id);
     }
 
     async findAll(): Promise<RoutineExercise[]> {
@@ -78,7 +83,12 @@ export class RoutineExerciseService {
 
         await this.validateReferences(dto.routineId, dto.exerciseId);
 
-        await this.routineExerciseRepository.update(id, dto);
+        const { routineId, exerciseId, ...data } = dto;
+        await this.routineExerciseRepository.update(id, {
+            ...data,
+            ...(routineId ? { routine: { id: routineId } } : {}),
+            ...(exerciseId ? { exercise: { id: exerciseId } } : {}),
+        });
 
         return await this.findOne(id);
     }

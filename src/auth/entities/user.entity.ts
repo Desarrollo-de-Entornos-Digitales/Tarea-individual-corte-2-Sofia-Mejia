@@ -19,8 +19,8 @@ export class User {
     @Column({ length: 255, name: 'password_hash' }) // Hashed password for each user
     passwordHash!: string;
 
-    @Column({ length: 255, nullable: true }) // Optional full name of the user
-    bio!: string;
+    @Column({ type: 'varchar', length: 255, nullable: true }) // Biografía opcional del usuario
+    bio!: string | null;
 
     @Column({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' }) // Automatically set the creation date of the user record to the current timestamp
     createdAt!: Date;

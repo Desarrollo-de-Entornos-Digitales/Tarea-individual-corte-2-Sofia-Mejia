@@ -1,28 +1,29 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 import { Routine } from './routine.entity';
 import { ActivityExercise } from './activity-exercise.entity';
 import { User } from './user.entity';
 
-@Entity('activity-logs')
+@Entity('activity_logs') // Historial de sesiones de entrenamiento
 export class ActivityLog {
-    @PrimaryColumn()
+    @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column({ name: 'started_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' }) // Automatically set the creation date of the user record to the current timestamp
+    @Column({ name: 'started_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     startedAt!: Date;
 
-    @Column({ name: 'completed_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' }) // Automatically set the creation date of the user record to the current timestamp
-    completedAt!: Date;
+    // Es nulo mientras la sesión sigue en curso
+    @Column({ name: 'completed_at', type: 'timestamp', nullable: true })
+    completedAt!: Date | null;
 
-    @Column({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' }) // Automatically set the creation date of the user record to the current timestamp
+    @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
     createdAt!: Date;
 
     @OneToMany(() => ActivityExercise, (activityExercise) => activityExercise.activityLog)
     activityExercise!: ActivityExercise[];
 
-    @ManyToOne(() => Routine, (routine) => routine.activities, { eager: false, nullable: false }) // Many-to-one relationship with Role entity, meaning that each user can have one role, but a role can be assigned to many users
-    @JoinColumn({ name: 'routine_id' }) // Eager loading is enabled for the role relationship, meaning that when a user is fetched from the database, the associated role will be loaded automatically without needing to specify it in the query
+    @ManyToOne(() => Routine, (routine) => routine.activities, { eager: false, nullable: false, onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'routine_id' })
     routine!: Routine;
 
     @ManyToOne(() => User, (user) => user.activityLog, { onDelete: 'CASCADE', nullable: false })

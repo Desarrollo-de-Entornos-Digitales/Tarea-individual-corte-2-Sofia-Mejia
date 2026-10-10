@@ -1,15 +1,15 @@
-import {Injectable} from '@nestjs/common';
-import {InjectRepository} from '@nestjs/typeorm';
-import {ConfigService} from '@nestjs/config';
-import {Between, ILike, IsNull, Not, Repository} from 'typeorm';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
+import { Between, ILike, IsNull, Not, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
-import {RoleNotFoundException, UserNotFoundException} from '../../common/exceptions';
-import {User} from '../entities/user.entity';
-import {RoleService} from '../role/role.service';
+import { RoleNotFoundException, UserNotFoundException } from '../../common/exceptions';
+import { User } from '../entities/user.entity';
+import { RoleService } from '../role/role.service';
 
-import {CreateUserDto} from './dto/create-user.dto';
-import {UpdateUserDto} from './dto/update-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -18,10 +18,10 @@ export class UserService {
         private readonly userRepository: Repository<User>,
         private readonly roleService: RoleService,
         private readonly configService: ConfigService,
-    ) { }
+    ) {}
 
     async create(createUserDto: CreateUserDto): Promise<User> {
-        const {roleId, ...userData} = createUserDto;
+        const { roleId, ...userData } = createUserDto;
         const role = await this.roleService.findOne(roleId);
         if (!role) {
             throw new RoleNotFoundException(roleId);
@@ -39,22 +39,39 @@ export class UserService {
 
         const savedUser = await this.userRepository.save(user);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const {passwordHash: _, ...userWithoutPassword} = savedUser;
+        const { passwordHash: _, ...userWithoutPassword } = savedUser;
         return userWithoutPassword as User;
     }
 
-    findAll() {
-        return this.userRepository.find({
+    private omitPassword(user: User): User {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { passwordHash: _, ...safeUser } = user;
+        return safeUser as User;
+    }
+
+    async findAll(): Promise<User[]> {
+        const users = await this.userRepository.find({
             relations: {
                 role: true,
             },
+            order: { id: 'ASC' },
         });
+        return users.map((user) => this.omitPassword(user));
+    }
+
+    /**
+     * Versión pública de findOne: incluye el rol pero nunca el hash de la contraseña.
+     */
+    async findOneProfile(id: number): Promise<User> {
+        const user = await this.findOne(id, false);
+        const withRole = await this.userRepository.findOne({ where: { id }, relations: { role: true } });
+        return this.omitPassword(withRole ?? user);
     }
 
     async findOne(id: number, relations: boolean = false): Promise<User> {
         const user = await this.userRepository.findOne({
-            where: {id},
-            relations: {role: relations ? {rolePermissions: {permission: true}} : false},
+            where: { id },
+            relations: { role: relations ? { rolePermissions: { permission: true } } : false },
         });
         if (!user) {
             throw new UserNotFoundException(id);
@@ -64,7 +81,7 @@ export class UserService {
 
     async findByEmail(email: string): Promise<User | null> {
         const user = await this.userRepository.findOne({
-            where: {email},
+            where: { email },
             relations: {
                 role: {
                     rolePermissions: {
@@ -107,23 +124,35 @@ export class UserService {
     // }
 
     async update(id: number, updateUserDto: UpdateUserDto) {
-        if (updateUserDto.roleId) {
-            const role = await this.roleService.findOne(updateUserDto.roleId);
+        await this.findOne(id);
+
+        const { roleId, passwordHash, ...data } = updateUserDto;
+        const changes: Parameters<Repository<User>['update']>[1] = { ...data };
+
+        if (roleId) {
+            const role = await this.roleService.findOne(roleId);
             if (!role) {
-                throw new RoleNotFoundException(updateUserDto.roleId);
+                throw new RoleNotFoundException(roleId);
             }
+            changes.role = { id: roleId };
         }
 
-        await this.findOne(id);
-        await this.userRepository.update(id, updateUserDto);
-        return this.findOne(id);
+        if (passwordHash) {
+            const saltRounds = parseInt(this.configService.get<string>('SALT_ROUNDS') ?? '10', 10);
+            changes.passwordHash = await bcrypt.hash(passwordHash, saltRounds);
+        }
+
+        if (Object.keys(changes).length > 0) {
+            await this.userRepository.update(id, changes);
+        }
+        return this.findOneProfile(id);
     }
 
     async remove(id: number) {
         await this.findOne(id);
         const result = await this.userRepository.delete(id);
         if (result.affected) {
-            return {id};
+            return { id };
         }
         return null;
     }
@@ -133,11 +162,11 @@ export class UserService {
      */
     async findByRole(roleName: string) {
         return await this.userRepository.find({
-            where: {role: {name: roleName}},
+            where: { role: { name: roleName } },
             relations: {
                 role: true,
             },
-            order: {username: 'ASC'},
+            order: { username: 'ASC' },
         });
     }
 
@@ -191,8 +220,8 @@ export class UserService {
     async searchUsersWithBio(term: string) {
         return await this.userRepository.find({
             where: [
-                {username: ILike(`%${term}%`), bio: Not(IsNull())},
-                {email: ILike(`%${term}%`), bio: Not(IsNull())},
+                { username: ILike(`%${term}%`), bio: Not(IsNull()) },
+                { email: ILike(`%${term}%`), bio: Not(IsNull()) },
             ],
             relations: {
                 role: true,
@@ -209,7 +238,7 @@ export class UserService {
      */
     async getUserWithPermissions(userId: number) {
         const user = await this.userRepository.findOne({
-            where: {id: userId},
+            where: { id: userId },
             relations: {
                 role: {
                     rolePermissions: {

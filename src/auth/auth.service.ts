@@ -22,7 +22,7 @@ export class AuthService {
 
         const isMatch = await bcrypt.compare(pass, user.passwordHash);
         if (!isMatch) {
-            throw new UnauthorizedException('Credenciales inv·lidas');
+            throw new UnauthorizedException('Credenciales inv√°lidas');
         }
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars

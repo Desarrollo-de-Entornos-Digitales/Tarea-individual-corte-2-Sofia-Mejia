@@ -14,7 +14,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     ) {
         const secret = configService.get<string>('JWT_SECRET');
         if (!secret) {
-            throw new Error('La variable de entorno JWT_SECRET no est· configurada');
+            throw new Error('La variable de entorno JWT_SECRET no est√° configurada');
         }
 
         super({

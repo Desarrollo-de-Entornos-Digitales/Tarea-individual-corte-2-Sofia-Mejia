@@ -1,5 +1,13 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
-import { PrimaryColumn } from 'typeorm';
+import {
+    Column,
+    CreateDateColumn,
+    Entity,
+    JoinColumn,
+    ManyToOne,
+    OneToMany,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn,
+} from 'typeorm';
 
 import { User } from './user.entity';
 import { RoutineExercise } from './routine-exercise.entity';
@@ -7,28 +15,31 @@ import { ActivityLog } from './activity-log.entity';
 
 @Entity('routines')
 export class Routine {
-    @PrimaryColumn()
+    @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column()
+    @Column({ length: 100 })
     name!: string;
 
-    @Column()
-    description!: string;
+    @Column({ type: 'text', nullable: true })
+    description!: string | null;
 
-    @Column({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' }) // Automatically set the creation date of the user record to the current timestamp
+    @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
     createdAt!: Date;
 
-    @Column({ name: 'updated_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' }) // Automatically set the creation date of the user record to the current timestamp
+    @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
     updatedAt!: Date;
 
-    @ManyToOne(() => User, (user) => user.routines, { eager: false })
+    // Cada rutina pertenece a un usuario (creador)
+    @ManyToOne(() => User, (user) => user.routines, { eager: false, nullable: false, onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
     user!: User;
 
-    @OneToMany(() => RoutineExercise, (routineExercise) => routineExercise.exercise)
+    // Una rutina contiene muchos ejercicios (tabla intermedia routine_exercises)
+    @OneToMany(() => RoutineExercise, (routineExercise) => routineExercise.routine)
     routineExercises!: RoutineExercise[];
 
+    // Una rutina puede ejecutarse en muchas sesiones (activity_logs)
     @OneToMany(() => ActivityLog, (activityLog) => activityLog.routine)
     activities!: ActivityLog[];
 }

@@ -1,42 +1,48 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 import { ActivityLog } from './activity-log.entity';
 import { RoutineExercise } from './routine-exercise.entity';
 
-@Entity('activity-exercises')
+@Entity('activity_exercises') // Lo que el usuario realmente hizo en cada ejercicio de una sesión
 export class ActivityExercise {
-    @PrimaryColumn()
+    @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column()
+    @Column({ name: 'actual_sets', type: 'int', default: 0 })
     actualSets!: number;
 
-    @Column()
+    @Column({ name: 'actual_reps', type: 'int', default: 0 })
     actualReps!: number;
 
-    @Column()
+    @Column({ name: 'actual_weight_kg', type: 'float', default: 0 })
     actualWeightKg!: number;
 
-    @Column()
+    @Column({ name: 'actual_duration_min', type: 'int', default: 0 })
     actualDurationMin!: number;
 
-    @Column()
+    @Column({ name: 'calories_burned', type: 'float', default: 0 })
     caloriesBurned!: number;
 
-    @Column()
+    @Column({ name: 'distance_covered_km', type: 'float', default: 0 })
     distanceCoveredKm!: number;
 
-    @Column({ name: 'started_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' }) // Automatically set the creation date of the user record to the current timestamp
+    @Column({ name: 'started_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     startedAt!: Date;
 
-    @Column({ name: 'completed_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' }) // Automatically set the creation date of the user record to the current timestamp
-    completedAt!: Date;
+    @Column({ name: 'completed_at', type: 'timestamp', nullable: true })
+    completedAt!: Date | null;
 
-    @ManyToOne(() => ActivityLog, (activityLog) => activityLog.activityExercise)
-    @JoinColumn({ name: 'activityLog_id' })
-    activityLog!: ActivityLog[];
+    @ManyToOne(() => ActivityLog, (activityLog) => activityLog.activityExercise, {
+        nullable: false,
+        onDelete: 'CASCADE',
+    })
+    @JoinColumn({ name: 'activity_log_id' })
+    activityLog!: ActivityLog;
 
-    @ManyToOne(() => RoutineExercise, (routineExercise) => routineExercise.activityExercise)
-    @JoinColumn({ name: 'routineExercise_id' })
-    routineExercise!: RoutineExercise[];
+    @ManyToOne(() => RoutineExercise, (routineExercise) => routineExercise.activityExercise, {
+        nullable: false,
+        onDelete: 'CASCADE',
+    })
+    @JoinColumn({ name: 'routine_exercise_id' })
+    routineExercise!: RoutineExercise;
 }

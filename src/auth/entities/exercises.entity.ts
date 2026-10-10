@@ -1,38 +1,34 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 import { RoutineExercise } from './routine-exercise.entity';
 
-@Entity('exercises')
+@Entity('exercises') // Catálogo de ejercicios
 export class Exercises {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column()
+    @Column({ length: 100 })
     name!: string;
 
-    @Column()
-    description!: string;
+    @Column({ type: 'text', nullable: true })
+    description!: string | null;
 
-    @Column()
+    @Column({ length: 50 })
     type!: string;
 
-    @Column()
+    @Column({ name: 'estimated_calories', type: 'float', default: 0 })
     estimatedCalories!: number;
 
-    @Column()
+    @Column({ name: 'estimated_distance_km', type: 'float', default: 0 })
     estimatedDistanceKm!: number;
 
-    @Column()
+    @Column({ name: 'estimated_duration_min', type: 'int', default: 0 })
     estimatedDurationMin!: number;
 
-    @Column()
-    icon!: string;
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    icon!: string | null;
 
-    @Column({
-        name: 'created_at',
-        type: 'timestamp',
-        default: () => 'CURRENT_TIMESTAMP',
-    })
+    @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
     createdAt!: Date;
 
     @OneToMany(() => RoutineExercise, (routineExercise) => routineExercise.exercise)

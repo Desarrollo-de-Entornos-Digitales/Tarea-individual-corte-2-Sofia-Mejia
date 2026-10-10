@@ -2,9 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { Routine } from 'src/auth/entities/routine.entity';
-import { ActivityLog } from 'src/auth/entities/activity-log.entity';
-
+import { Routine } from '../auth/entities/routine.entity';
+import { ActivityLog } from '../auth/entities/activity-log.entity';
 import { ResourceNotFoundException, UserNotFoundException } from '../common/exceptions';
 import { User } from '../auth/entities/user.entity';
 
@@ -37,15 +36,23 @@ export class ActivityLogService {
     async create(dto: CreateActivityLogDto): Promise<ActivityLog> {
         await this.validateReferences(dto.userId, dto.routineId);
 
-        const activityLog = this.activityLogRepository.create(dto);
+        const { userId, routineId, ...data } = dto;
+        const activityLog = this.activityLogRepository.create({
+            ...data,
+            user: { id: userId },
+            routine: { id: routineId },
+        });
+        const saved = await this.activityLogRepository.save(activityLog);
 
-        return await this.activityLogRepository.save(activityLog);
+        return await this.findOne(saved.id);
     }
 
     async findAll(): Promise<ActivityLog[]> {
         return await this.activityLogRepository.find({
             relations: {
                 activityExercise: true,
+                user: true,
+                routine: true,
             },
             order: {
                 startedAt: 'DESC',
@@ -60,6 +67,8 @@ export class ActivityLogService {
             },
             relations: {
                 activityExercise: true,
+                user: true,
+                routine: true,
             },
         });
 
@@ -75,7 +84,12 @@ export class ActivityLogService {
 
         await this.validateReferences(dto.userId, dto.routineId);
 
-        await this.activityLogRepository.update(id, dto);
+        const { userId, routineId, ...data } = dto;
+        await this.activityLogRepository.update(id, {
+            ...data,
+            ...(userId ? { user: { id: userId } } : {}),
+            ...(routineId ? { routine: { id: routineId } } : {}),
+        });
 
         return await this.findOne(id);
     }

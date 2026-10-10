@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { Routine } from 'src/auth/entities/routine.entity';
-import { Exercises } from 'src/auth/entities/exercises.entity';
-import { RoutineExercise } from 'src/auth/entities/routine-exercise.entity';
+import { Routine } from '../auth/entities/routine.entity';
+import { Exercises } from '../auth/entities/exercises.entity';
+import { RoutineExercise } from '../auth/entities/routine-exercise.entity';
 
 import { RoutineExerciseService } from './routine-exercise.service';
 import { RoutineExerciseController } from './routine-exercise.controller';

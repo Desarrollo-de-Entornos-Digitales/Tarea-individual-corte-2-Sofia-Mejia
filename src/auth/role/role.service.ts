@@ -1,20 +1,30 @@
-import {Injectable} from '@nestjs/common';
-import {ILike, Repository} from 'typeorm';
-import {InjectRepository} from '@nestjs/typeorm';
+import { ConflictException, Injectable } from '@nestjs/common';
+import { ILike, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
-import {Role} from '../entities/role.entity';
+import { RoleNotFoundException } from '../../common/exceptions';
+import { Role } from '../entities/role.entity';
+import { User } from '../entities/user.entity';
 
-import {CreateRoleDto} from './dto/create-role.dto';
-import {UpdateRoleDto} from './dto/update-role.dto';
+import { CreateRoleDto } from './dto/create-role.dto';
+import { UpdateRoleDto } from './dto/update-role.dto';
 
 @Injectable()
 export class RoleService {
     constructor(
         @InjectRepository(Role)
         private readonly roleRepository: Repository<Role>,
-    ) { }
+
+        @InjectRepository(User)
+        private readonly userRepository: Repository<User>,
+    ) {}
 
     async create(createRoleDto: CreateRoleDto): Promise<Role> {
+        const existing = await this.roleRepository.findOneBy({ name: createRoleDto.name });
+        if (existing) {
+            throw new ConflictException(`Ya existe un rol con el nombre '${createRoleDto.name}'.`);
+        }
+
         const newRole = this.roleRepository.create(createRoleDto);
 
         return await this.roleRepository.save(newRole);
@@ -22,41 +32,40 @@ export class RoleService {
 
     async findAll(): Promise<Role[]> {
         return await this.roleRepository.find({
-            relations: {},
+            relations: { rolePermissions: { permission: true } },
+            order: { id: 'ASC' },
         });
     }
 
-    async findOne(id: number): Promise<Role | null> {
-        return await this.roleRepository.findOne({
-            where: {
-                id,
-            },
-            relations: {},
+    async findOne(id: number): Promise<Role> {
+        const role = await this.roleRepository.findOne({
+            where: { id },
+            relations: { rolePermissions: { permission: true } },
         });
+        if (!role) {
+            throw new RoleNotFoundException(id);
+        }
+        return role;
     }
 
-    async update(
-        id: number,
-        updateRoleDto: UpdateRoleDto,
-    ): Promise<Role | null> {
+    async update(id: number, updateRoleDto: UpdateRoleDto): Promise<Role> {
+        await this.findOne(id);
         await this.roleRepository.update(id, updateRoleDto);
 
-        return await this.roleRepository.findOne({
-            where: {
-                id,
-            },
-            relations: {},
-        });
+        return await this.findOne(id);
     }
 
-    async remove(id: number): Promise<{id: number} | null> {
-        const result = await this.roleRepository.delete(id);
+    async remove(id: number): Promise<{ id: number }> {
+        await this.findOne(id);
 
-        if (result.affected) {
-            return {id};
+        // No se puede eliminar un rol que todavía tiene usuarios asignados
+        if (await this.userRepository.existsBy({ role: { id } })) {
+            throw new ConflictException('No se puede eliminar un rol que tiene usuarios asignados.');
         }
 
-        return null;
+        await this.roleRepository.delete(id);
+
+        return { id };
     }
 
     /**

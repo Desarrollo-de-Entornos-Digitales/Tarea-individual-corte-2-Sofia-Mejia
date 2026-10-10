@@ -1,3 +1,11 @@
+-- Seed de datos iniciales.
+-- Credenciales de prueba:
+--   admin@gym.com  / Admin123*  (rol admin: todos los permisos)
+--   juan@example.com, maria@example.com, carlos@example.com, ana@example.com / User123*  (rol user)
+-- El script se puede ejecutar varias veces: primero limpia las tablas y reinicia los ids.
+TRUNCATE TABLE activity_exercises, activity_logs, routine_exercises, routines, exercises,
+               role_permissions, users, permissions, roles RESTART IDENTITY CASCADE;
+
 -- Insert Roles
 INSERT INTO roles (name, description) VALUES
 ('admin', 'Administrator with full access to manage users, roles and exercises'),
@@ -11,25 +19,31 @@ INSERT INTO permissions (name, description) VALUES
 ('delete_routine', 'Delete workout routines'),
 ('manage_users', 'Manage user accounts'),
 ('manage_roles', 'Manage roles and permissions'),
-('manage_exercises', 'Manage exercise catalog');
+('manage_exercises', 'Manage exercise catalog'),
 ('read_exercise','Read the exercise catalog'),
 ('create_activity', 'Register new activity logs and performed exercises'),
 ('read_activity', 'Read activity logs and performed exercises'),
 ('update_activity', 'Update activity logs and performed exercises'),
 ('delete_activity', 'Delete activity logs and performed exercises');
 -- Insert Role-Permission relationships
+-- Permission ids: 1 create_routine, 2 read_routine, 3 update_routine, 4 delete_routine,
+--                 5 manage_users, 6 manage_roles, 7 manage_exercises, 8 read_exercise,
+--                 9 create_activity, 10 read_activity, 11 update_activity, 12 delete_activity
 INSERT INTO role_permissions (role_id, permission_id) VALUES
-(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), -- Admin has all permissions
-(2, 1), (2, 2), (2, 3), (2, 4);
-(2, 8), (2, 9), (2, 10), (2, 11), (2, 12); -- Regular user can manage their routines
+-- Admin: all permissions
+(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (1, 10), (1, 11), (1, 12),
+-- Regular user: manage own routines and activity logs, read the exercise catalog
+(2, 1), (2, 2), (2, 3), (2, 4),
+(2, 8),
+(2, 9), (2, 10), (2, 11), (2, 12);
 
 -- Insert Users
 INSERT INTO users (username, email, password_hash, bio, role_id, created_at) VALUES
-('admin_user', 'admin@gym.com', '$2b$10$hashedpassword1', 'System administrator', 1, NOW()),
-('juan_perez', 'juan@example.com', '$2b$10$hashedpassword2', 'Fitness enthusiast', 2, NOW()),
-('maria_garcia', 'maria@example.com', '$2b$10$hashedpassword3', 'Crossfit practitioner', 2, NOW()),
-('carlos_lopez', 'carlos@example.com', '$2b$10$hashedpassword4', 'Marathon runner', 2, NOW()),
-('ana_martinez', 'ana@example.com', '$2b$10$hashedpassword5', 'Powerlifting athlete', 2, NOW());
+('admin_user', 'admin@gym.com', '$2b$10$okeMwbgvqbjsaeBmceng3.rdQj4o2OWhbtLjyvOseT4ILr.VDcHEe', 'System administrator', 1, NOW()),
+('juan_perez', 'juan@example.com', '$2b$10$Jy5DzlQcmdeXQEGlMYOlqerTPEWwfYQZkYf5qZBt6gT6TDNtawBqq', 'Fitness enthusiast', 2, NOW()),
+('maria_garcia', 'maria@example.com', '$2b$10$Jy5DzlQcmdeXQEGlMYOlqerTPEWwfYQZkYf5qZBt6gT6TDNtawBqq', 'Crossfit practitioner', 2, NOW()),
+('carlos_lopez', 'carlos@example.com', '$2b$10$Jy5DzlQcmdeXQEGlMYOlqerTPEWwfYQZkYf5qZBt6gT6TDNtawBqq', 'Marathon runner', 2, NOW()),
+('ana_martinez', 'ana@example.com', '$2b$10$Jy5DzlQcmdeXQEGlMYOlqerTPEWwfYQZkYf5qZBt6gT6TDNtawBqq', 'Powerlifting athlete', 2, NOW());
 
 -- Insert Exercises
 INSERT INTO exercises (name, description, type, estimated_calories, estimated_distance_km, estimated_duration_min, icon) VALUES

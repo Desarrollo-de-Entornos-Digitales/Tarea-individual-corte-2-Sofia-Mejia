@@ -44,15 +44,15 @@ export class UserController {
     @HttpCode(HttpStatus.OK)
     @Permissions('manage_users')
     findOne(@Param('id', PositiveIntPipe) id: number) {
-        return this.userService.findOne(id);
+        return this.userService.findOneProfile(id);
     }
 
     @Patch(':id')
     @HttpCode(HttpStatus.OK)
     @Permissions('manage_users')
-    async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    async update(@Param('id', PositiveIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
         try {
-            return await this.userService.update(+id, updateUserDto);
+            return await this.userService.update(id, updateUserDto);
         } catch (error) {
             // Si la excepción es del negocio (como UserNotFoundException), se relanza directamente
             if (error instanceof Error && 'status' in error) {
@@ -68,7 +68,7 @@ export class UserController {
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     @Permissions('manage_users')
-    async remove(@Param('id') id: string) {
-        await this.userService.remove(+id);
+    async remove(@Param('id', PositiveIntPipe) id: number) {
+        await this.userService.remove(id);
     }
 }

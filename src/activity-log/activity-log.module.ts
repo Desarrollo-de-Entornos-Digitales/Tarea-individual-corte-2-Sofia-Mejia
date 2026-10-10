@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { Routine } from 'src/auth/entities/routine.entity';
-import { ActivityLog } from 'src/auth/entities/activity-log.entity';
-
+import { Routine } from '../auth/entities/routine.entity';
+import { ActivityLog } from '../auth/entities/activity-log.entity';
 import { User } from '../auth/entities/user.entity';
 
 import { ActivityLogService } from './activity-log.service';

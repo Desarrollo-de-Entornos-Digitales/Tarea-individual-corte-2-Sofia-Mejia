@@ -1,22 +1,27 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 import { RolePermission } from './role-permission.entity';
 import { User } from './user.entity';
 
-@Entity('roles') // This decorator marks the class as a database entity and specifies the table name as 'roles'
+@Entity('roles') // Tabla 'roles'
 export class Role {
-    @PrimaryGeneratedColumn() // Primary key, auto-incremented
+    @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column({ unique: true, length: 50 }) // Unique role name with a maximum length of 50 characters
+    @Column({ unique: true, length: 50 }) // Nombre único del rol
     name!: string;
 
     @Column({ length: 255 })
     description!: string;
 
-    @OneToMany(() => RolePermission, (rolePermission) => rolePermission.role) // One-to-many relationship with RolePermission entity
+    @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
+    createdAt!: Date;
+
+    // Un rol tiene muchos permisos a través de la tabla intermedia role_permissions
+    @OneToMany(() => RolePermission, (rolePermission) => rolePermission.role)
     rolePermissions!: RolePermission[];
 
-    @OneToMany(() => User, (user) => user.role) // One-to-many relationship with User entity, meaning that a role can be assigned to many users, but each user can have only one role
+    // Un rol puede estar asignado a muchos usuarios, pero cada usuario tiene un solo rol
+    @OneToMany(() => User, (user) => user.role)
     users!: User[];
 }

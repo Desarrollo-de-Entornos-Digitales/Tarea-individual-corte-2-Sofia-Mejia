@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
+import { PositiveIntPipe } from '../../common/pipes/positive-int-pipe';
 import { PermissionsGuard } from '../guards/permissions/permissions.guard';
 import { Permissions } from '../decorators/permissions.decorator';
 
@@ -14,6 +15,7 @@ export class RoleController {
     constructor(private readonly roleService: RoleService) {}
 
     @Post()
+    @HttpCode(HttpStatus.CREATED)
     @Permissions('manage_roles')
     create(@Body() createRoleDto: CreateRoleDto) {
         return this.roleService.create(createRoleDto);
@@ -27,19 +29,20 @@ export class RoleController {
 
     @Get(':id')
     @Permissions('manage_roles')
-    findOne(@Param('id') id: string) {
-        return this.roleService.findOne(+id);
+    findOne(@Param('id', PositiveIntPipe) id: number) {
+        return this.roleService.findOne(id);
     }
 
     @Patch(':id')
     @Permissions('manage_roles')
-    update(@Param('id') id: string, @Body() updateRoleDto: UpdateRoleDto) {
-        return this.roleService.update(+id, updateRoleDto);
+    update(@Param('id', PositiveIntPipe) id: number, @Body() updateRoleDto: UpdateRoleDto) {
+        return this.roleService.update(id, updateRoleDto);
     }
 
     @Delete(':id')
+    @HttpCode(HttpStatus.NO_CONTENT)
     @Permissions('manage_roles')
-    remove(@Param('id') id: string) {
-        return this.roleService.remove(+id);
+    async remove(@Param('id', PositiveIntPipe) id: number) {
+        await this.roleService.remove(id);
     }
 }
